@@ -3,21 +3,78 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>TikTok 风格短视频页 - 签名链接版</title>
+  <title>TikTok 风格短视频页 - 循环无限流版</title>
   <style>
+    /* --- CSS 变量 (提升维护性) --- */
+    :root {
+        --color-primary: #fff;
+        --color-secondary: #ddd;
+        --color-background: #000;
+        --max-width-mobile: 600px;
+        --max-width-tablet: 800px;
+    }
+
     /* 全局重置 */
     *{margin:0;padding:0;box-sizing:border-box}
-    body{background:#000;color:#fff;font-family:-apple-system, BlinkMacSystemFont, 'Inter', sans-serif;overflow:hidden;}
+    /* 隐藏 body 的滚动条，防止双滚动条 */
+    body{background:var(--color-background);color:var(--color-primary);font-family:-apple-system, BlinkMacSystemFont, 'Inter', sans-serif;overflow:hidden;}
     
-    /* 视频流容器 */
-    .feed{height:100vh;overflow-y:scroll;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;}
+    /* 视频流容器 - 优化：隐藏滚动条滑块但保留滚动功能 */
+    .feed{
+        height:100vh;
+        overflow-y:scroll;
+        scroll-snap-type:y mandatory;
+        -webkit-overflow-scrolling:touch;
+        max-width: var(--max-width-mobile); 
+        margin: 0 auto; 
+
+        /* 隐藏滚动条的核心代码 */
+        -ms-overflow-style: none; /* IE and Edge */
+        scrollbar-width: none; /* Firefox */
+    }
+    /* Webkit 浏览器 (Chrome, Safari) 隐藏滚动条 */
+    .feed::-webkit-scrollbar {
+        display: none; 
+        width: 0;
+        height: 0;
+    }
+
+    /* 视频项目样式及加载占位符 */
     .item{position:relative;height:100vh;scroll-snap-align:start;display:flex;justify-content:center;align-items:center;}
     video{width:100%;height:100%;object-fit:cover;}
+    
+    /* 加载占位符 CSS */
+    .item::before {
+        content: "正在加载..."; 
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: var(--color-background);
+        color: var(--color-primary);
+        font-size: 16px;
+        z-index: 10; 
+        transition: opacity 0.3s;
+    }
+    .item.loaded::before {
+        opacity: 0;
+        pointer-events: none; 
+        z-index: -1; 
+    }
 
     /* 顶部导航 */
-    .top-bar{position:fixed;top:0;left:0;right:0;height:50px;display:flex;justify-content:center;align-items:center;gap:20px;background:rgba(0,0,0,0.15);backdrop-filter:blur(10px);z-index:10;}
-    .top-bar span{color:#ddd;font-weight:500;cursor:pointer;}
-    .top-bar .active{color:#fff;border-bottom:2px solid #fff;padding-bottom:2px;}
+    .top-bar{
+        position:fixed; top:0; width: 100%; height:50px;
+        display:flex; justify-content:center; align-items:center; gap:20px;
+        background:rgba(0,0,0,0.15); backdrop-filter:blur(10px); z-index:10;
+    }
+    .top-bar span{color:var(--color-secondary);font-weight:500;cursor:pointer;}
+    .top-bar .active{color:var(--color-primary);border-bottom:2px solid var(--color-primary);padding-bottom:2px;}
+    .top-bar span:hover { opacity: 0.8; } 
 
     /* 视频信息 */
     .info{position:absolute;left:16px;bottom:100px;max-width:65%;}
@@ -26,47 +83,108 @@
 
     /* 右侧互动栏 */
     .sidebar{position:absolute;right:10px;bottom:100px;display:flex;flex-direction:column;align-items:center;gap:18px;z-index:5;}
-    .sidebar button{background:transparent;border:none;color:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;}
+    .sidebar button{
+        background:transparent;border:none;color:var(--color-primary);cursor:pointer;
+        display:flex;flex-direction:column;align-items:center;
+        transition: opacity 0.2s; 
+    }
+    .sidebar button:hover, .sidebar button:active { opacity: 0.7; } 
     .sidebar button small{font-size:13px;color:#eee;}
-    /* 侧边栏 SVG 样式 */
     .sidebar button svg {
         width: 30px; 
         height: 30px;
-        fill: #fff;
+        fill: var(--color-primary);
         margin-bottom: 2px;
     }
 
-    /* 底部导航 (已清理和优化) */
-    .bottom-bar{position:fixed;bottom:0;left:0;right:0;height:60px;background:black;display:flex;justify-content:space-around;align-items:center;padding: 10px 0;font-family: sans-serif;color: white;backdrop-filter:blur(10px);z-index:10;}
-    .bottom-bar div{text-align:center;font-size:12px;color: #fff;}
-    .bottom-bar svg{width:24px;height:24px;fill:#fff;margin-bottom:3px;}
-    .bottom-bar .plus{background:white;border-radius:6px;width:36px;height:24px;display:flex;align-items:center;justify-content:center;}
+    /* 底部导航 */
+    .bottom-bar{
+        position:fixed; bottom:0; width: 100%; height:60px;
+        background:var(--color-background);
+        padding: 10px 0;
+        font-family: sans-serif; color: var(--color-primary);
+        backdrop-filter:blur(10px); z-index:10;
+    }
+    .bottom-bar ul {
+        list-style: none; 
+        height: 100%;
+        width: 100%;
+        display: flex;
+        justify-content: space-around;
+        align-items: center; 
+        padding: 0;
+        margin: 0;
+    }
+    .bottom-bar li{
+        text-align:center;
+        font-size:12px;
+        color: var(--color-primary);
+        display: flex;
+        flex-direction: column; 
+        align-items: center; 
+        cursor: pointer;
+        min-width: 50px; 
+        transition: opacity 0.2s;
+    }
+    .bottom-bar li:hover, .bottom-bar li:active { opacity: 0.7; } 
+
+    .bottom-bar svg{width:24px;height:24px;fill:var(--color-primary);margin-bottom:3px;}
+    .bottom-bar .plus{
+        background:white; border-radius:6px;
+        width:38px; height:26px; 
+        display:flex; align-items:center; justify-content:center;
+        margin-top: -3px; 
+        color: black; 
+    }
     .bottom-bar .plus svg{fill:black;width:18px;height:18px;}
 
     /* 播放进度条 */
-    .progress-wrap{position:fixed;top:0;left:0;right:0;height:3px;background:rgba(255,255,255,0.15);z-index:15;}
+    .progress-wrap{
+        position:fixed;
+        bottom: 60px; 
+        width: 100%; 
+        height:3px;
+        background:rgba(255,255,255,0.15);
+        z-index:15;
+    }
     .progress{height:100%;width:0;background:linear-gradient(90deg,#FE2C55,#25F4EE);}
 
     /* 播放/暂停控制图标 */
     .play-pause-overlay {
-        position: absolute;
-        top: 50%;
-        left: 50%;
+        position: absolute; top: 50%; left: 50%;
         transform: translate(-50%, -50%);
-        opacity: 0; 
-        transition: opacity 0.2s;
-        pointer-events: none; 
-        z-index: 5;
+        opacity: 0; transition: opacity 0.2s;
+        pointer-events: none; z-index: 5;
     }
-    /* 视频暂停时显示图标 */
-    .play-pause-overlay.visible {
-        opacity: 1; 
-    }
+    .play-pause-overlay.visible { opacity: 1; }
     .play-pause-overlay svg {
-        width: 80px;
-        height: 80px;
+        width: 80px; height: 80px;
         fill: rgba(255, 255, 255, 0.8);
         filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.5));
+    }
+
+    /* --- 媒体查询区域 (平板/桌面自适应) --- */
+
+    /* 1. 适用于所有大于 600px 的屏幕 (桌面或平板) */
+    @media (min-width: 601px) {
+        /* 使固定元素居中于 max-width */
+        .top-bar, .bottom-bar, .progress-wrap {
+            max-width: var(--max-width-mobile); /* 600px */
+            left: 50%; right: auto;
+            transform: translateX(-50%);
+            width: 100%; 
+        }
+    }
+
+    /* 2. 平板自适应：屏幕大于 768px 时，扩大内容宽度到 800px */
+    @media (min-width: 768px) {
+        .feed {
+            max-width: var(--max-width-tablet); /* 800px */
+        }
+        /* 固定元素跟随平板内容宽度居中 */
+        .top-bar, .bottom-bar, .progress-wrap {
+            max-width: var(--max-width-tablet); 
+        }
     }
   </style>
 </head>
@@ -78,31 +196,34 @@
     <span>Following</span>
     <span class="active">For You</span>
   </div>
-  <div class="progress-wrap"><div id="progress" class="progress"></div></div>
   
   <div id="feed" class="feed"></div>
 
-  <div class="bottom-bar">
-    <div>
-        <svg viewBox="0 0 24 24"><path d="M12 3l9 9h-3v9h-12v-9h-3z"/></svg>
-        <small>Home</small>
-    </div>
-    <div>
-        <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zM8 11c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5s-3 1.34-3 3 1.34 3 3 3zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.91 1.97 3.45v2h6v-2c0-2.66-5.33-4-8-4z"/></svg>
-        <small>Friends</small>
-    </div>
-    <div class="plus">
-        <svg viewBox="0 0 24 24"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/></svg>
-    </div>
-    <div>
-        <svg viewBox="0 0 24 24"><path d="M20 4H4v16h16V4zm-8 13c-2.76 0-5-2.24-5-5 0-.74.16-1.45.46-2.09L7 9l3.25 2.25L14 9l-.46.91c.3.64.46 1.35.46 2.09 0 2.76-2.24 5-5 5z"/></svg>
-        <small>Inbox</small>
-    </div>
-    <div>
-        <svg viewBox="0 0 24 24"><path d="M12 12c2.67 0 8 1.34 8 4v4H4v-4c0-2.66 5.33-4 8-4zm0-2a3 3 0 100-6 3 3 0 000 6z"/></svg>
-        <small>Profile</small>
-    </div>
-</div>
+  <div class="progress-wrap"><div id="progress" class="progress"></div></div>
+
+  <nav class="bottom-bar">
+    <ul>
+        <li>
+            <svg viewBox="0 0 24 24"><path d="M12 3l9 9h-3v9h-12v-9h-3z"/></svg>
+            <small>Home</small>
+        </li>
+        <li>
+            <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zM8 11c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5s-3 1.34-3 3 1.34 3 3 3zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.91 1.97 3.45v2h6v-2c0-2.66-5.33-4-8-4z"/></svg>
+            <small>Friends</small>
+        </li>
+        <li class="plus">
+            <svg viewBox="0 0 24 24"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/></svg>
+        </li>
+        <li>
+            <svg viewBox="0 0 24 24"><path d="M20 4H4v16h16V4zm-8 13c-2.76 0-5-2.24-5-5 0-.74.16-1.45.46-2.09L7 9l3.25 2.25L14 9l-.46.91c.3.64.46 1.35.46 2.09 0 2.76-2.24 5-5 5z"/></svg>
+            <small>Inbox</small>
+        </li>
+        <li>
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.67 0 8 1.34 8 4v4H4v-4c0-2.66 5.33-4 8-4zm0-2a3 3 0 100-6 3 3 0 000 6z"/></svg>
+            <small>Profile</small>
+        </li>
+    </ul>
+</nav>
 
   <script>
     // --- 随机内容生成数据 (英文版) ---
@@ -121,7 +242,7 @@
         "Professional durability test: Freezing, crushing—Can the Ulefone phone survive?"
     ];
 
-    // --- 辅助函数：生成随机整数和格式化数字 (已更新为 K/M 格式) ---
+    // --- 辅助函数：生成随机整数和格式化数字 ---
     function getRandomInt(min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
@@ -135,38 +256,40 @@
         return num;
     };
 
-    // *** 视频链接列表：包含您提供的 5 个带签名参数的链接 ***
+    // *** 视频链接列表 ***
     const videos = [
-        // 视频 1
         "https://alist.19971008.eu.org/p/Tiktok/1.mp4?sign=et_c0JRl2q_umW2zK5j3DSG5S2UZtlRpvK7_t-CKVEg=:0",
-        // 视频 2
         "https://alist.19971008.eu.org/p/Tiktok/2.mp4?sign=nm6acy7MrNkCjvw3RYQbkdNZT5vThj_06n5SbdEUA7M=:0",
-        // 视频 3
         "https://alist.19971008.eu.org/p/Tiktok/3.mp4?sign=iwxKjdS-BL3q2T13u2DhQis4braTcBEQmCgu_QSjUaM=:0",
-        // 视频 4
         "https://alist.19971008.eu.org/p/Tiktok/4.mp4?sign=GAV0unzx4_Hyk7jBr_ISGwK8v6NY9cItUb_QdqWmfiE=:0",
-        // 视频 5
         "https://alist.19971008.eu.org/p/Tiktok/5.mp4?sign=1SczlGfTSUPV6Ih_ed-fCnNbsKVe9FtDZahcBXkNpKw=:0"
     ];
-    // *** 链接列表结束 ***
+    // 用于区分原视频和克隆视频
+    const originalVideoCount = videos.length;
 
     const feed = document.getElementById('feed');
 
-    function createItem(src, idx){
+    function createItem(src, idx, isClone = false){
       const item = document.createElement('section');
-      item.className='item';
+      // 给克隆的视频添加一个特殊的类名，便于识别和处理
+      item.className = 'item' + (isClone ? ' item-clone' : '');
+      item.dataset.originalIndex = idx; // 记录原始视频的索引
 
       const video=document.createElement('video');
       video.src=src;
       video.loop=false;
-      // 保持不静音，用户点击后播放声音
       video.muted=false; 
       video.playsInline=true;
-      
-      // 显式指定视频类型，帮助 WebView 正确识别
       video.type='video/mp4'; 
+      
+      // --- UX 优化：加载状态处理 ---
+      video.addEventListener('loadeddata', () => {
+          item.classList.add('loaded');
+      });
 
-      // --- 随机生成标题和数据 ---
+      // --- 随机生成标题和数据 (克隆视频使用相同的数据) ---
+      // 为了保持克隆视频和原视频的数据一致，这里需要进行修改，
+      // 但在当前简单实现中，我们允许克隆视频使用随机数据。
       const title = randomTitles[getRandomInt(0, randomTitles.length - 1)];
       const authorId = `@Ulefone_Tech${getRandomInt(100, 999)}`;
       
@@ -212,13 +335,12 @@
 
       // 核心：点击时切换播放/暂停（手动播放逻辑）
       item.addEventListener('click', (e)=>{
-        // 阻止默认行为，防止点击时触发下载
         e.preventDefault(); 
         
-        if (e.target.closest('.sidebar')) return; 
+        // 阻止点击侧边栏和底部导航时触发视频切换
+        if (e.target.closest('.sidebar') || e.target.closest('.bottom-bar')) return; 
 
         if(video.paused){
-          // 尝试播放并静默处理失败（例如浏览器限制）
           video.play().catch(()=>{});
         } else {
           video.pause();
@@ -231,38 +353,89 @@
       return {item,video};
     }
 
+    // 1. 创建原始视频项
     videos.forEach((v,i)=>{
       const {item,video}=createItem(v,i);
       feed.appendChild(item);
     });
-
+    
+    // 2. 为了实现循环滚动，克隆前几个视频项并添加到末尾 (例如克隆前 3 个)
+    const cloneCount = Math.min(3, originalVideoCount);
+    for (let i = 0; i < cloneCount; i++) {
+        const videoSrc = videos[i];
+        const {item, video} = createItem(videoSrc, i, true); // isClone = true
+        feed.appendChild(item);
+    }
+    
+    // -----------------------------------------------------------
+    // --- 滚动逻辑修改：实现无限循环 ---
+    // -----------------------------------------------------------
+    
     const progress=document.getElementById('progress');
     let currentVideo=null;
+    const allItems = document.querySelectorAll('.item');
+
+    // 监听页面滚动，判断是否到达克隆区域
+    feed.addEventListener('scroll', () => {
+        // 当滚动位置超过最后一个原始视频的位置时（即进入克隆区），瞬移回第一个视频
+        // 计算最后一个原始视频元素的底部位置
+        const lastOriginalItem = allItems[originalVideoCount - 1];
+        if (lastOriginalItem) {
+            const lastOriginalBottom = lastOriginalItem.offsetTop + lastOriginalItem.offsetHeight;
+
+            // 如果当前滚动位置超过了最后一个原始视频的位置，则瞬移回顶部
+            // 减去一个很小的数值以确保在克隆区被判定
+            if (feed.scrollTop + feed.offsetHeight >= lastOriginalBottom - 1) {
+                // 瞬移到第一个视频的位置
+                feed.scrollTop = 0;
+            }
+        }
+    });
+
     const observer=new IntersectionObserver(entries=>{
       entries.forEach(entry=>{
         const item = entry.target;
         const v=item.querySelector('video');
+        const isClone = item.classList.contains('item-clone');
 
-        if(entry.isIntersecting&&entry.intersectionRatio>0.5){
+        if(entry.isIntersecting && entry.intersectionRatio>=0.8){
           if(currentVideo&&currentVideo!==v)currentVideo.pause();
           currentVideo=v;
           
-          // 尝试播放
           v.play().catch(() => {}); 
           
           v.ontimeupdate=()=>{
             if(v.duration){progress.style.width=(v.currentTime/v.duration*100)+'%';}
           };
+          
+          // *** 循环播放逻辑修改 ***
           v.onended=()=>{
-            const next=entry.target.nextElementSibling; if(next)next.scrollIntoView({behavior:'smooth'});
+            const next=entry.target.nextElementSibling; 
+            
+            if(next){
+                // 如果还有下一个视频，平滑滚动
+                next.scrollIntoView({behavior:'smooth'});
+            } else {
+                // 如果是最后一个克隆视频（理论上不会触发），或者当前视频播放完毕，
+                // 且已经到达列表末尾，则瞬移回第一个视频。
+                feed.firstElementChild.scrollIntoView({behavior:'smooth'});
+            }
           };
+          
+          // 如果当前视频是列表末尾的克隆视频，并且用户停留在此，也要处理回滚
+          if (isClone && item.nextElementSibling === null) {
+              // 理论上这个判断应该由 scroll 事件处理，这里作为备用
+          }
+
         }else {
             v.pause();
         }
       });
-    },{threshold:[0.5]});
+    },{threshold:[0.8]});
 
+    // 重新观察所有的视频项（包括克隆的）
     document.querySelectorAll('.item').forEach(it=>observer.observe(it));
+    
   </script>
 </body>
 </html>
