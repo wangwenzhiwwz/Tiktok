@@ -1,32 +1,34 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>TikTok Style Short Video Feed - Ulefone Theme</title>
+  <title>TikTok 风格短视频页 - 签名链接版</title>
   <style>
+    /* 全局重置 */
     *{margin:0;padding:0;box-sizing:border-box}
     body{background:#000;color:#fff;font-family:-apple-system, BlinkMacSystemFont, 'Inter', sans-serif;overflow:hidden;}
     
+    /* 视频流容器 */
     .feed{height:100vh;overflow-y:scroll;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;}
     .item{position:relative;height:100vh;scroll-snap-align:start;display:flex;justify-content:center;align-items:center;}
     video{width:100%;height:100%;object-fit:cover;}
 
-    /* Top Navigation Bar */
+    /* 顶部导航 */
     .top-bar{position:fixed;top:0;left:0;right:0;height:50px;display:flex;justify-content:center;align-items:center;gap:20px;background:rgba(0,0,0,0.15);backdrop-filter:blur(10px);z-index:10;}
     .top-bar span{color:#ddd;font-weight:500;cursor:pointer;}
     .top-bar .active{color:#fff;border-bottom:2px solid #fff;padding-bottom:2px;}
 
-    /* Video Info */
+    /* 视频信息 */
     .info{position:absolute;left:16px;bottom:100px;max-width:65%;}
     .author{font-weight:600;margin-bottom:4px;}
     .desc{font-size:14px;color:#ccc;line-height:1.4;}
 
-    /* Sidebar Interaction */
+    /* 右侧互动栏 */
     .sidebar{position:absolute;right:10px;bottom:100px;display:flex;flex-direction:column;align-items:center;gap:18px;z-index:5;}
     .sidebar button{background:transparent;border:none;color:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;}
     .sidebar button small{font-size:13px;color:#eee;}
-    /* Sidebar SVG Styling */
+    /* 侧边栏 SVG 样式 */
     .sidebar button svg {
         width: 30px; 
         height: 30px;
@@ -34,18 +36,18 @@
         margin-bottom: 2px;
     }
 
-    /* Bottom Navigation Bar */
-    .bottom-bar{position:fixed;bottom:0;left:0;right:0;height:60px;background:black;display:flex;justify-content:space-around;align-items:center;padding: 10px 0;font-family: sans-serif;color: white;z-index:10;}
+    /* 底部导航 (已清理和优化) */
+    .bottom-bar{position:fixed;bottom:0;left:0;right:0;height:60px;background:black;display:flex;justify-content:space-around;align-items:center;padding: 10px 0;font-family: sans-serif;color: white;backdrop-filter:blur(10px);z-index:10;}
     .bottom-bar div{text-align:center;font-size:12px;color: #fff;}
     .bottom-bar svg{width:24px;height:24px;fill:#fff;margin-bottom:3px;}
     .bottom-bar .plus{background:white;border-radius:6px;width:36px;height:24px;display:flex;align-items:center;justify-content:center;}
     .bottom-bar .plus svg{fill:black;width:18px;height:18px;}
 
-    /* Progress Bar */
+    /* 播放进度条 */
     .progress-wrap{position:fixed;top:0;left:0;right:0;height:3px;background:rgba(255,255,255,0.15);z-index:15;}
     .progress{height:100%;width:0;background:linear-gradient(90deg,#FE2C55,#25F4EE);}
 
-    /* Play/Pause Overlay Icon */
+    /* 播放/暂停控制图标 */
     .play-pause-overlay {
         position: absolute;
         top: 50%;
@@ -56,7 +58,7 @@
         pointer-events: none; 
         z-index: 5;
     }
-    /* Show icon when video is paused */
+    /* 视频暂停时显示图标 */
     .play-pause-overlay.visible {
         opacity: 1; 
     }
@@ -103,23 +105,23 @@
 </div>
 
   <script>
-    // --- Random Content Data (Ulefone Theme) ---
+    // --- 随机内容生成数据 (英文版) ---
     const randomTitles = [
-        "Ulefone Armor Review: The Unbreakable Flagship? Drop Test included! #Ulefone #RuggedPhone",
-        "Battery King? Ulefone Power Series Extreme Endurance Test! Is it the true standby champion?",
-        "Ulefone Armor 24: With built-in flashlight? Essential outdoor gear!",
-        "New underwater photography experience! Diving with my Ulefone X10 camera Vlog.",
-        "Forget broken screens! Ulefone phone drop test, I was shocked by the end!",
-        "New Ulefone phone specs leaked! Flagship performance at a lower price?",
-        "My extreme sports partner—Why I chose a Ulefone device.",
-        "Survival necessity! Ulefone thermal imaging feature in action.",
-        "Ulefone system smoothness test, how is the daily user experience?",
-        "Ulefone vs Competition: Who is the real outdoor king of ruggedness?",
-        "New camping gear: Can the Ulefone's massive battery really last a week?",
-        "Professional stress test: Frozen, Run Over—Can the Ulefone phone survive?"
+        "Ulefone Armor: Flagship rugged phone deep review. Is it truly indestructible? #Ulefone #RuggedPhone",
+        "King of value? Ulefone Power series battery endurance challenge! Who is the standby king?",
+        "Ulefone Armor 24: Built-in powerful flashlight? Essential gear for outdoor emergencies!",
+        "New underwater photography experience! Diving and taking photos with my Ulefone X10 Vlog.",
+        "Stop worrying about cracked screens! Ulefone drop test—I'm impressed by the end!",
+        "Leaked specs for this new Ulefone phone! Performance close to mainstream flagships?",
+        "My extreme sports partner—Why did I choose a Ulefone phone?",
+        "Essential for wilderness survival! Ulefone thermal imaging feature practical demonstration.",
+        "Ulefone phone system fluency test. How is the daily usage experience?",
+        "Ulefone vs Competition: Who is the real outdoor rugged phone king?",
+        "New gear for outdoor camping: Can Ulefone's massive battery really last a week?",
+        "Professional durability test: Freezing, crushing—Can the Ulefone phone survive?"
     ];
 
-    // --- Helper Functions: Random Integer and Number Formatting ---
+    // --- 辅助函数：生成随机整数和格式化数字 (已更新为 K/M 格式) ---
     function getRandomInt(min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
@@ -133,13 +135,20 @@
         return num;
     };
 
-    // --- Video Path Generation (Auto-load 1 to 15) ---
-    const videos = [];
-    const maxIndex = 15; 
-    for (let i = 1; i <= maxIndex; i++) {
-        // Paths: video/1.mp4, video/2.mp4, etc.
-        videos.push(`video/${i}.mp4`); 
-    }
+    // *** 视频链接列表：包含您提供的 5 个带签名参数的链接 ***
+    const videos = [
+        // 视频 1
+        "https://alist.19971008.eu.org/p/Tiktok/1.mp4?sign=et_c0JRl2q_umW2zK5j3DSG5S2UZtlRpvK7_t-CKVEg=:0",
+        // 视频 2
+        "https://alist.19971008.eu.org/p/Tiktok/2.mp4?sign=nm6acy7MrNkCjvw3RYQbkdNZT5vThj_06n5SbdEUA7M=:0",
+        // 视频 3
+        "https://alist.19971008.eu.org/p/Tiktok/3.mp4?sign=iwxKjdS-BL3q2T13u2DhQis4braTcBEQmCgu_QSjUaM=:0",
+        // 视频 4
+        "https://alist.19971008.eu.org/p/Tiktok/4.mp4?sign=GAV0unzx4_Hyk7jBr_ISGwK8v6NY9cItUb_QdqWmfiE=:0",
+        // 视频 5
+        "https://alist.19971008.eu.org/p/Tiktok/5.mp4?sign=1SczlGfTSUPV6Ih_ed-fCnNbsKVe9FtDZahcBXkNpKw=:0"
+    ];
+    // *** 链接列表结束 ***
 
     const feed = document.getElementById('feed');
 
@@ -150,15 +159,17 @@
       const video=document.createElement('video');
       video.src=src;
       video.loop=false;
-      // *** As requested: NOT MUTED ***
+      // 保持不静音，用户点击后播放声音
       video.muted=false; 
       video.playsInline=true;
+      
+      // 显式指定视频类型，帮助 WebView 正确识别
+      video.type='video/mp4'; 
 
-      // --- Randomly generate title and stats ---
+      // --- 随机生成标题和数据 ---
       const title = randomTitles[getRandomInt(0, randomTitles.length - 1)];
       const authorId = `@Ulefone_Tech${getRandomInt(100, 999)}`;
       
-      // Randomly generate interaction stats
       const likes = getRandomInt(1000, 1500000); 
       const comments = getRandomInt(100, 50000); 
       const saves = getRandomInt(100, 30000); 
@@ -188,8 +199,8 @@
           <small>${formatNumber(shares)}</small>
         </button>`;
 
+      // 播放/暂停覆盖层
       const playPauseOverlay = document.createElement('div');
-      // Visible by default since auto-play will fail.
       playPauseOverlay.className = 'play-pause-overlay visible'; 
       playPauseOverlay.innerHTML = `<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`;
 
@@ -199,11 +210,15 @@
       item.appendChild(sidebar);
       item.appendChild(playPauseOverlay); 
 
-      // Toggle play/pause on click
+      // 核心：点击时切换播放/暂停（手动播放逻辑）
       item.addEventListener('click', (e)=>{
+        // 阻止默认行为，防止点击时触发下载
+        e.preventDefault(); 
+        
         if (e.target.closest('.sidebar')) return; 
 
         if(video.paused){
+          // 尝试播放并静默处理失败（例如浏览器限制）
           video.play().catch(()=>{});
         } else {
           video.pause();
@@ -232,10 +247,8 @@
           if(currentVideo&&currentVideo!==v)currentVideo.pause();
           currentVideo=v;
           
-          // *** Attempting to play (Will likely fail due to not being muted) ***
-          v.play().catch(error => {
-            console.warn(`Video ${v.src} auto-play failed (Browser Policy):`, error.name);
-          }); 
+          // 尝试播放
+          v.play().catch(() => {}); 
           
           v.ontimeupdate=()=>{
             if(v.duration){progress.style.width=(v.currentTime/v.duration*100)+'%';}
@@ -250,7 +263,6 @@
     },{threshold:[0.5]});
 
     document.querySelectorAll('.item').forEach(it=>observer.observe(it));
-    
   </script>
 </body>
 </html>
