@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>TikTok Style Short Video Feed - Ulefone Theme</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:#000;color:#fff;font-family:-apple-system, BlinkMacSystemFont, 'Inter', sans-serif;overflow:hidden;}
+    
+    .feed{height:100vh;overflow-y:scroll;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;}
+    .item{position:relative;height:100vh;scroll-snap-align:start;display:flex;justify-content:center;align-items:center;}
+    video{width:100%;height:100%;object-fit:cover;}
+
+    /* Top Navigation Bar */
+    .top-bar{position:fixed;top:0;left:0;right:0;height:50px;display:flex;justify-content:center;align-items:center;gap:20px;background:rgba(0,0,0,0.15);backdrop-filter:blur(10px);z-index:10;}
+    .top-bar span{color:#ddd;font-weight:500;cursor:pointer;}
+    .top-bar .active{color:#fff;border-bottom:2px solid #fff;padding-bottom:2px;}
+
+    /* Video Info */
+    .info{position:absolute;left:16px;bottom:100px;max-width:65%;}
+    .author{font-weight:600;margin-bottom:4px;}
+    .desc{font-size:14px;color:#ccc;line-height:1.4;}
+
+    /* Sidebar Interaction */
+    .sidebar{position:absolute;right:10px;bottom:100px;display:flex;flex-direction:column;align-items:center;gap:18px;z-index:5;}
+    .sidebar button{background:transparent;border:none;color:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;}
+    .sidebar button small{font-size:13px;color:#eee;}
+    /* Sidebar SVG Styling */
+    .sidebar button svg {
+        width: 30px; 
+        height: 30px;
+        fill: #fff;
+        margin-bottom: 2px;
+    }
+
+    /* Bottom Navigation Bar */
+    .bottom-bar{position:fixed;bottom:0;left:0;right:0;height:60px;background:black;display:flex;justify-content:space-around;align-items:center;padding: 10px 0;font-family: sans-serif;color: white;z-index:10;}
+    .bottom-bar div{text-align:center;font-size:12px;color: #fff;}
+    .bottom-bar svg{width:24px;height:24px;fill:#fff;margin-bottom:3px;}
+    .bottom-bar .plus{background:white;border-radius:6px;width:36px;height:24px;display:flex;align-items:center;justify-content:center;}
+    .bottom-bar .plus svg{fill:black;width:18px;height:18px;}
+
+    /* Progress Bar */
+    .progress-wrap{position:fixed;top:0;left:0;right:0;height:3px;background:rgba(255,255,255,0.15);z-index:15;}
+    .progress{height:100%;width:0;background:linear-gradient(90deg,#FE2C55,#25F4EE);}
+
+    /* Play/Pause Overlay Icon */
+    .play-pause-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        opacity: 0; 
+        transition: opacity 0.2s;
+        pointer-events: none; 
+        z-index: 5;
+    }
+    /* Show icon when video is paused */
+    .play-pause-overlay.visible {
+        opacity: 1; 
+    }
+    .play-pause-overlay svg {
+        width: 80px;
+        height: 80px;
+        fill: rgba(255, 255, 255, 0.8);
+        filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.5));
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <span>LIVE</span>
+    <span>STEM</span>
+    <span>Explore</span>
+    <span>Following</span>
+    <span class="active">For You</span>
+  </div>
+  <div class="progress-wrap"><div id="progress" class="progress"></div></div>
+  
+  <div id="feed" class="feed"></div>
+
+  <div class="bottom-bar">
+    <div>
+        <svg viewBox="0 0 24 24"><path d="M12 3l9 9h-3v9h-12v-9h-3z"/></svg>
+        <small>Home</small>
+    </div>
+    <div>
+        <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zM8 11c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5s-3 1.34-3 3 1.34 3 3 3zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.91 1.97 3.45v2h6v-2c0-2.66-5.33-4-8-4z"/></svg>
+        <small>Friends</small>
+    </div>
+    <div class="plus">
+        <svg viewBox="0 0 24 24"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/></svg>
+    </div>
+    <div>
+        <svg viewBox="0 0 24 24"><path d="M20 4H4v16h16V4zm-8 13c-2.76 0-5-2.24-5-5 0-.74.16-1.45.46-2.09L7 9l3.25 2.25L14 9l-.46.91c.3.64.46 1.35.46 2.09 0 2.76-2.24 5-5 5z"/></svg>
+        <small>Inbox</small>
+    </div>
+    <div>
+        <svg viewBox="0 0 24 24"><path d="M12 12c2.67 0 8 1.34 8 4v4H4v-4c0-2.66 5.33-4 8-4zm0-2a3 3 0 100-6 3 3 0 000 6z"/></svg>
+        <small>Profile</small>
+    </div>
+</div>
+
+  <script>
+    // --- Random Content Data (Ulefone Theme) ---
+    const randomTitles = [
+        "Ulefone Armor Review: The Unbreakable Flagship? Drop Test included! #Ulefone #RuggedPhone",
+        "Battery King? Ulefone Power Series Extreme Endurance Test! Is it the true standby champion?",
+        "Ulefone Armor 24: With built-in flashlight? Essential outdoor gear!",
+        "New underwater photography experience! Diving with my Ulefone X10 camera Vlog.",
+        "Forget broken screens! Ulefone phone drop test, I was shocked by the end!",
+        "New Ulefone phone specs leaked! Flagship performance at a lower price?",
+        "My extreme sports partner—Why I chose a Ulefone device.",
+        "Survival necessity! Ulefone thermal imaging feature in action.",
+        "Ulefone system smoothness test, how is the daily user experience?",
+        "Ulefone vs Competition: Who is the real outdoor king of ruggedness?",
+        "New camping gear: Can the Ulefone's massive battery really last a week?",
+        "Professional stress test: Frozen, Run Over—Can the Ulefone phone survive?"
+    ];
+
+    // --- Helper Functions: Random Integer and Number Formatting ---
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+    const formatNumber = (num) => {
+        if (num >= 1000000) {
+            return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+        }
+        if (num >= 1000) {
+            return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+        }
+        return num;
+    };
+
+    // --- Video Path Generation (Auto-load 1 to 15) ---
+    const videos = [];
+    const maxIndex = 15; 
+    for (let i = 1; i <= maxIndex; i++) {
+        // Paths: video/1.mp4, video/2.mp4, etc.
+        videos.push(`video/${i}.mp4`); 
+    }
+
+    const feed = document.getElementById('feed');
+
+    function createItem(src, idx){
+      const item = document.createElement('section');
+      item.className='item';
+
+      const video=document.createElement('video');
+      video.src=src;
+      video.loop=false;
+      // *** As requested: NOT MUTED ***
+      video.muted=false; 
+      video.playsInline=true;
+
+      // --- Randomly generate title and stats ---
+      const title = randomTitles[getRandomInt(0, randomTitles.length - 1)];
+      const authorId = `@Ulefone_Tech${getRandomInt(100, 999)}`;
+      
+      // Randomly generate interaction stats
+      const likes = getRandomInt(1000, 1500000); 
+      const comments = getRandomInt(100, 50000); 
+      const saves = getRandomInt(100, 30000); 
+      const shares = getRandomInt(50, 15000); 
+
+      const info=document.createElement('div');
+      info.className='info';
+      info.innerHTML=`<div class="author">${authorId}</div><div class="desc">${title}</div>`;
+
+      const sidebar=document.createElement('div');
+      sidebar.className='sidebar';
+      sidebar.innerHTML=`
+        <button>
+          <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+          <small>${formatNumber(likes)}</small>
+        </button>
+        <button>
+          <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>
+          <small>${formatNumber(comments)}</small>
+        </button>
+        <button>
+          <svg viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>
+          <small>${formatNumber(saves)}</small>
+        </button>
+        <button>
+          <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+          <small>${formatNumber(shares)}</small>
+        </button>`;
+
+      const playPauseOverlay = document.createElement('div');
+      // Visible by default since auto-play will fail.
+      playPauseOverlay.className = 'play-pause-overlay visible'; 
+      playPauseOverlay.innerHTML = `<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`;
+
+
+      item.appendChild(video);
+      item.appendChild(info);
+      item.appendChild(sidebar);
+      item.appendChild(playPauseOverlay); 
+
+      // Toggle play/pause on click
+      item.addEventListener('click', (e)=>{
+        if (e.target.closest('.sidebar')) return; 
+
+        if(video.paused){
+          video.play().catch(()=>{});
+        } else {
+          video.pause();
+        }
+      });
+      
+      video.addEventListener('play', () => { playPauseOverlay.classList.remove('visible'); });
+      video.addEventListener('pause', () => { playPauseOverlay.classList.add('visible'); });
+
+      return {item,video};
+    }
+
+    videos.forEach((v,i)=>{
+      const {item,video}=createItem(v,i);
+      feed.appendChild(item);
+    });
+
+    const progress=document.getElementById('progress');
+    let currentVideo=null;
+    const observer=new IntersectionObserver(entries=>{
+      entries.forEach(entry=>{
+        const item = entry.target;
+        const v=item.querySelector('video');
+
+        if(entry.isIntersecting&&entry.intersectionRatio>0.5){
+          if(currentVideo&&currentVideo!==v)currentVideo.pause();
+          currentVideo=v;
+          
+          // *** Attempting to play (Will likely fail due to not being muted) ***
+          v.play().catch(error => {
+            console.warn(`Video ${v.src} auto-play failed (Browser Policy):`, error.name);
+          }); 
+          
+          v.ontimeupdate=()=>{
+            if(v.duration){progress.style.width=(v.currentTime/v.duration*100)+'%';}
+          };
+          v.onended=()=>{
+            const next=entry.target.nextElementSibling; if(next)next.scrollIntoView({behavior:'smooth'});
+          };
+        }else {
+            v.pause();
+        }
+      });
+    },{threshold:[0.5]});
+
+    document.querySelectorAll('.item').forEach(it=>observer.observe(it));
+    
+  </script>
+</body>
+</html>
